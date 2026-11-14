@@ -10,4 +10,6 @@ Lo que hay que saber de la API y del juego (unidades, campos y lo que la API no 
 
 - La API simulada (`api/`) no se toca: es un servicio externo.
 - Los textos de pantalla van en castellano.
-- Antes de dar una tarea por terminada, `npm run check` (tipos y build) tiene que pasar.
+- En los componentes de React, las props y cualquier forma de objeto se declaran con `interface`, no con `type`.
+- No se añaden dependencias de producción sin preguntar.
+- Antes de dar una tarea por terminada, `npm run check` (tipos, reglas del equipo, guardarraíles y build) tiene que pasar.

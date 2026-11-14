@@ -68,10 +68,35 @@ En `.claude/skills/`:
 
 `reviewer` y `validation` no ven la conversación en la que se escribió el código: solo los criterios (`.claude/tmp/<slug>/criterios.md`) y el diff. Así no se dan la razón a sí mismas.
 
+## Los guardarraíles
+
+Una regla escrita en `CLAUDE.md` es una petición: el agente la puede olvidar. Un guardarraíl es una regla que se comprueba sola y que el agente no puede saltarse.
+
+| guardarraíl | dónde | qué exige |
+|---|---|---|
+| tipos | TypeScript | el proyecto compila |
+| props con `interface` | regla de ESLint hecha a mano (`eslint/propsConInterface.js`) | en los componentes, las formas de objeto se declaran con `interface`, no con `type` |
+| la API es externa | test (`guardarrailes/reglas.test.ts`) | `src/` no importa nada de `api/` |
+| una sola conversión | test | el factor de mph a km/h aparece una sola vez |
+| sin dependencias nuevas | test | `dependencies` solo tiene `react` y `react-dom` |
+
+```bash
+npm run check   # tipos, ESLint, guardarraíles y build
+npm run lint    # solo las reglas de ESLint
+npm test        # solo los guardarraíles
+```
+
+### Cuándo corren
+
+Los hooks de Claude Code (`.claude/settings.json` → `.claude/hooks/guardarrailes.mjs`) los meten en el bucle del agente:
+
+- **Después de cada edición** de un fichero de `src/`, ESLint revisa ese fichero. Si falla, el error vuelve al agente y lo corrige en el momento.
+- **Al terminar**, si hay cambios en `src/`, se ejecuta `npm run check`. Si está en rojo, el agente no puede dar la tarea por terminada.
+
 ## Práctica
 
-1. **A pelo.** Lanza `/implement` con el prompt tal cual. Mira qué supuestos ha elegido y si `reviewer` y `validation` los han dado por buenos.
-2. **Con especificación.** En una sesión nueva, `/grill-me` con el mismo prompt hasta tener `specs/<tarea>.md`, y después `/implement specs/<tarea>.md`.
-3. **Cotejo.** ¿Qué ha cazado cada skill? ¿Qué se ha colado en las dos vueltas?
+1. **Mira cómo salta.** Pide al agente: *«Saca la tarjeta del listado a un componente `TarjetaVehiculo` con sus props tipadas»*. Fíjate en qué pasa cuando escribe `type Props = { … }`.
+2. **Escribe tu regla.** Elige una regla del equipo y conviértela en un test de `guardarrailes/` o en una regla de ESLint en `eslint/`. Ideas: los precios siempre con `$` y punto de miles, nada de `console.log`, ningún color en crudo fuera de `styles.css`.
+3. **Pruébala con el agente.** Lanza `/implement` con el prompt y comprueba si tu regla lo ha frenado.
 
 > Añade al comparador cuál de los coches es mejor para dar un golpe.
