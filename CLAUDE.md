@@ -10,4 +10,4 @@ Lo que hay que saber de la API y del juego (unidades, campos y lo que la API no 
 
 - La API simulada (`api/`) no se toca: es un servicio externo.
 - Los textos de pantalla van en castellano.
-- Antes de dar una tarea por terminada, `npm run build` tiene que pasar.
+- Antes de dar una tarea por terminada, `npm run check` (tipos y build) tiene que pasar.

@@ -12,3 +12,6 @@ dist/
 # Mutation testing
 reports/
 .stryker-tmp/
+
+# Specs y capturas desechables de los agentes
+.claude/tmp/

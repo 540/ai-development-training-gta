@@ -24,6 +24,8 @@ npm install
 npm run dev
 ```
 
+La primera vez, para la skill `validation`: `npx playwright install chromium`.
+
 ## Dónde está cada cosa
 
 | fichero | qué hay |
@@ -53,12 +55,23 @@ Los datos los sirve una API simulada que arranca con `npm run dev` (`api/plugin.
 
 Todo llega como texto y la velocidad, en millas por hora. Las estadísticas son aproximadas y están inventadas para la práctica. GTA y Grand Theft Auto son marcas de Rockstar Games; este proyecto no tiene relación con ellas.
 
+## Las skills
+
+En `.claude/skills/`:
+
+| skill | qué hace | dónde corre |
+|---|---|---|
+| `/grill-me` | Te interroga hasta escribir la especificación en `specs/` | en tu conversación |
+| `/implement <tarea o spec>` | Fija los criterios, implementa y llama a `reviewer` y `validation`; repite con los arreglos hasta 3 rondas | en tu conversación |
+| `/reviewer <slug>` | Revisa el diff contra los criterios y `CONTEXT.md` y da un veredicto APTO o NO APTO | en un subagente (`context: fork`) |
+| `/validation <slug>` | Comprueba cada criterio en Chromium con Playwright y saca una captura de cada uno | en un subagente (`context: fork`) |
+
+`reviewer` y `validation` no ven la conversación en la que se escribió el código: solo los criterios (`.claude/tmp/<slug>/criterios.md`) y el diff. Así no se dan la razón a sí mismas.
+
 ## Práctica
 
-Esta vez no se implementa: se especifica. La skill `grill-me` ya viene en `.claude/skills/`, y lo que hay que saber del juego y de la API está en `CONTEXT.md`.
-
-1. **A pelo.** Lanza el prompt y pide los criterios de aceptación con los que darías la tarea por terminada. Sin implementar.
-2. **Interrogatorio.** En una sesión nueva, lanza `/grill-me` con el mismo prompt y contesta tú como negocio hasta que escriba la especificación en `specs/`.
-3. **Cotejo.** ¿Qué salió solo en la segunda vuelta? ¿Estaba escrito en algún sitio?
+1. **A pelo.** Lanza `/implement` con el prompt tal cual. Mira qué supuestos ha elegido y si `reviewer` y `validation` los han dado por buenos.
+2. **Con especificación.** En una sesión nueva, `/grill-me` con el mismo prompt hasta tener `specs/<tarea>.md`, y después `/implement specs/<tarea>.md`.
+3. **Cotejo.** ¿Qué ha cazado cada skill? ¿Qué se ha colado en las dos vueltas?
 
 > Añade al comparador cuál de los coches es mejor para dar un golpe.
