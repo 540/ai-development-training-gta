@@ -93,10 +93,25 @@ Los hooks de Claude Code (`.claude/settings.json` → `.claude/hooks/guardarrail
 - **Después de cada edición** de un fichero de `src/`, ESLint revisa ese fichero. Si falla, el error vuelve al agente y lo corrige en el momento.
 - **Al terminar**, si hay cambios en `src/`, se ejecuta `npm run check`. Si está en rojo, el agente no puede dar la tarea por terminada.
 
+## El harness
+
+`.claude/workflows/implement.mjs` hace lo mismo que `/implement`, pero el orden, las rondas y la condición de parada los decide el código y no el modelo. Cada fase es un agente nuevo que sigue la skill que le toca:
+
+| fase | agente | qué hace |
+|---|---|---|
+| Criterios | sigue el paso 1 de `implement` | Slug, supuestos y criterios en `.claude/tmp/<slug>/criterios.md` |
+| Implementar | sigue el paso 2 de `implement` | Código mínimo hasta `npm run check` en verde |
+| Revisar y validar | `reviewer` ‖ `validation` | En paralelo: veredicto con hallazgos y una captura por criterio |
+| Arreglar | implementador con la lista | Los critical de la revisión y los criterios que fallan en el navegador; vuelve a revisar y validar |
+
+Para cuando la revisión da APTO y todos los criterios pasan, o al llegar a 3 rondas. Devuelve los supuestos, los criterios con su captura y lo que haya quedado pendiente. No hace commit.
+
+Se lanza desde Claude Code pidiéndole que ejecute el workflow `implement` con `{ task: "…" }` o `{ specFile: "specs/x.md" }`. Opción: `maxRounds`.
+
 ## Práctica
 
-1. **Mira cómo salta.** Pide al agente: *«Saca la tarjeta del listado a un componente `TarjetaVehiculo` con sus props tipadas»*. Fíjate en qué pasa cuando escribe `type Props = { … }`.
-2. **Escribe tu regla.** Elige una regla del equipo y conviértela en un test de `guardarrailes/` o en una regla de ESLint en `eslint/`. Ideas: los precios siempre con `$` y punto de miles, nada de `console.log`, ningún color en crudo fuera de `styles.css`.
-3. **Pruébala con el agente.** Lanza `/implement` con el prompt y comprueba si tu regla lo ha frenado.
+1. **Lánzalo.** Ejecuta el workflow con el prompt y mira el progreso con `/workflows`.
+2. **Con especificación.** Lánzalo otra vez con la `specs/` que sacaste con `/grill-me`.
+3. **Cotejo.** ¿Qué cambia frente a `/implement` en la rama `skills`? ¿Quién decide cuándo está terminado?
 
 > Añade al comparador cuál de los coches es mejor para dar un golpe.
