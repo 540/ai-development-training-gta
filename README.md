@@ -55,6 +55,10 @@ Todo llega como texto y la velocidad, en millas por hora. Las estadísticas son 
 
 ## Práctica
 
-Lanza este prompt a tu agente:
+Esta vez no se implementa: se especifica. La skill `grill-me` ya viene en `.claude/skills/`, y lo que hay que saber del juego y de la API está en `CONTEXT.md`.
+
+1. **A pelo.** Lanza el prompt y pide los criterios de aceptación con los que darías la tarea por terminada. Sin implementar.
+2. **Interrogatorio.** En una sesión nueva, lanza `/grill-me` con el mismo prompt y contesta tú como negocio hasta que escriba la especificación en `specs/`.
+3. **Cotejo.** ¿Qué salió solo en la segunda vuelta? ¿Estaba escrito en algún sitio?
 
 > Añade al comparador cuál de los coches es mejor para dar un golpe.
