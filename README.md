@@ -55,7 +55,7 @@ Todo llega como texto y la velocidad, en millas por hora. Las estadísticas son 
 
 ## Práctica
 
-Esta vez no se implementa: se especifica. La skill `grill-me` ya viene en `.claude/skills/`, y lo que hay que saber del juego y de la API está en `CONTEXT.md`.
+Esta vez no se implementa: se especifica. La skill `grill-me` ya viene en `.claude/skills/`, junto con `to-spec` (pasa a especificación lo ya hablado, sin interrogar) y `to-tickets` (trocea una especificación en tickets), adaptadas de las de Matt Pocock. Lo que hay que saber del juego y de la API está en `CONTEXT.md`.
 
 1. **A pelo.** Lanza el prompt y pide los criterios de aceptación con los que darías la tarea por terminada. Sin implementar.
 2. **Interrogatorio.** En una sesión nueva, lanza `/grill-me` con el mismo prompt y contesta tú como negocio hasta que escriba la especificación en `specs/`.
