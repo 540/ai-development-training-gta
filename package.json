@@ -3,13 +3,19 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "check": "tsc --noEmit && eslint src && vitest run && vite build",
     "e2e": "playwright test",
     "lint": "eslint src",
-    "test": "vitest run"
+    "test": "vitest run",
+    "duplication": "jscpd src tools",
+    "coverage": "vitest run --coverage",
+    "crap": "tsx tools/crap/cli.ts",
+    "mutation": "stryker run",
+    "verify": "npm run check && npm run duplication && npm run coverage && npm run crap"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -17,10 +23,15 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
+    "@stryker-mutator/core": "^10.1.1",
+    "@stryker-mutator/vitest-runner": "^10.1.1",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-istanbul": "^2.1.8",
     "eslint": "^9.17.0",
+    "jscpd": "^5.4.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.18.1",
     "vite": "^5.2.0",

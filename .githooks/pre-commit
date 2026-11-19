@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+set -e
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx')
+
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+npx tsc --noEmit
+src=$(printf '%s\n' "$staged" | grep -E '^src/' || true)
+if [ -n "$src" ]; then
+  printf '%s\n' "$src" | tr '\n' '\0' | xargs -0 npx eslint --no-warn-ignored
+fi
+printf '%s\n' "$staged" | tr '\n' '\0' | xargs -0 npx vitest related --run --passWithNoTests

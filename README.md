@@ -95,18 +95,34 @@ Los hooks de Claude Code (`.claude/settings.json` → `.claude/hooks/guardarrail
 
 ## El harness
 
-`.claude/workflows/implement.mjs` hace lo mismo que `/implement`, pero el orden, las rondas y la condición de parada los decide el código y no el modelo. Cada fase es un agente nuevo que sigue la skill que le toca:
+`.claude/workflows/implement.mjs` lleva una tarea hasta una PR en borrador contra `harness`, sin intervención. El orden, las rondas y la condición de parada los decide el código y no el modelo. Cada fase es un agente nuevo de `.claude/agents/` con las skills que le tocan precargadas:
 
-| fase | agente | qué hace |
+| fase | agente (skills) | qué hace |
 |---|---|---|
-| Criterios | sigue el paso 1 de `implement` | Slug, supuestos y criterios en `.claude/tmp/<slug>/criterios.md` |
-| Implementar | sigue el paso 2 de `implement` | Código mínimo hasta `npm run check` en verde |
-| Revisar y validar | `reviewer` ‖ `validation` | En paralelo: veredicto con hallazgos y una captura por criterio |
-| Arreglar | implementador con la lista | Los critical de la revisión y los criterios que fallan en el navegador; vuelve a revisar y validar |
+| Analyze | `researcher` (`gta-domain`, `project-conventions`) | Plan en `.claude/tmp/<slug>/plan.md`: criterios, diseño, tests y supuestos |
+| Plan review | agente sin tipo | Revisión adversaria del plan: ficheros sin consumidor y la opción más simple de cada supuesto |
+| Branch | agente sin tipo | Rama `feature/<slug>` desde `harness` (si hay cambios sin commitear, los guarda en un stash) |
+| Preflight | `.claude/scripts/preflight.mjs` | Acceso a git y gh, Chromium, `gh pr create --attach` y `npm run check` en verde de partida |
+| Implement | `task-implementer` | Código y tests hasta `npm run check` en verde, y un commit de checkpoint (skill `commit`) |
+| Review | gates ‖ `reviewer` (`review-pr`) → triaje | Gates deterministas (`check`, duplicación, cobertura, CRAP y Stryker acotado al diff) en paralelo con una revisión puntuada (Merge Safety de 0 a 10, tope de 5 si hay algún gate en rojo); cada hallazgo pasa por un triaje: aplicar, descartar o duda |
+| Verify | `browser-verifier` (`verify-browser`) | Si el cambio se ve, un spec de Playwright y una captura por criterio |
+| PR | `pr-creator` (`commit`, `open-pr`) | Push (el pre-push ejecuta `npm run verify`) y PR en borrador con las capturas adjuntas y las salvedades |
 
-Para cuando la revisión da APTO y todos los criterios pasan, o al llegar a 3 rondas. Devuelve los supuestos, los criterios con su captura y lo que haya quedado pendiente. No hace commit.
+Los arreglos vuelven a `task-implementer` y repiten Review (y Verify) hasta 3 rondas. Desde la segunda, solo los critical y los gates en rojo dan otra vuelta. Sale cuando la Merge Safety llega a 8,5 con los gates en verde, cuando una ronda no avanza o al llegar al tope. Lo que queda pendiente va a las salvedades de la PR.
 
-Se lanza desde Claude Code pidiéndole que ejecute el workflow `implement` con `{ task: "…" }` o `{ specFile: "specs/x.md" }`. Opción: `maxRounds`.
+Se lanza desde Claude Code pidiéndole que ejecute el workflow `implement` con `{ task: "…" }` o `{ specFile: "specs/x.md" }`. Opciones: `baseBranch`, `maxRounds`, `minScore`, `skipBrowser`, `skipPr`, `model` y `effort`.
+
+### Gates
+
+| gate | comando | qué exige |
+|---|---|---|
+| check | `npm run check` | tipos, ESLint, guardarraíles y build |
+| duplicación | `npm run duplication` | jscpd sin bloques duplicados en `src/` ni `tools/` |
+| cobertura | `npm run coverage` | 100 % de líneas y ramas en `src/dominio/` y `tools/` |
+| CRAP | `npm run crap` | ninguna función con CRAP por encima de 8 |
+| mutación | `npm run mutation` | Stryker mata el 100 % de los mutantes de `src/dominio/` (en el workflow, solo los ficheros del diff) |
+
+La UI legada de `src/App.tsx` no tiene tests unitarios y se comprueba en el navegador. La lógica pura nueva va en `src/dominio/` y se mide entera. `npm install` activa los hooks de git de `.githooks/`: el pre-commit ejecuta tipos, ESLint y los tests relacionados, y el pre-push ejecuta `npm run verify`.
 
 ## Práctica
 
