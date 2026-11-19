@@ -5,6 +5,7 @@ import boltIcon from './assets/bolt.svg'
 import shieldIcon from './assets/shield.svg'
 import { Aviso, Barra, Consejo, DINERO_INICIAL, Estrellas, FondoViceCity, Hud, Noticias, nivelBusqueda, pctVelocidad, useTrucos } from './gta'
 import { CreditoFoto, FotoCoche, SombraCoche } from './fotos'
+import { avisoGolpe, ganadoresGolpe, puntuarGolpe, textoGolpe, type CandidatoGolpe } from './dominio/golpe'
 
 const API = '/api'
 
@@ -167,6 +168,7 @@ function convertir(d: any) {
     armor: d.armor,
     blindaje: blindajes[d.armor] || d.armor,
     armas: armas[d.weapons] || d.weapons,
+    weapons: d.weapons,
     armado: d.weapons != 'None',
     velocidad: km(Number(d.topSpeed)),
     topSpeed: Number(d.topSpeed),
@@ -914,9 +916,29 @@ function Comparar(props: any) {
     ['Puntuación de rendimiento', 'perfScore', 'max'],
   ]
 
+  // la fila del golpe va aparte: los no aptos muestran por qué, no «—»
+  const candidatos: CandidatoGolpe[] = coches.map((c: any) => ({
+    nombre: c.make + ' ' + c.model,
+    resultado: puntuarGolpe({
+      plazas: c.seats,
+      blindaje: c.armor,
+      armamento: c.weapons,
+      pctVelocidad: pctVelocidad(c.topSpeed),
+      aceleracion: c.acceleration,
+      agarre: c.traction,
+    }),
+  }))
+  const ganadores = ganadoresGolpe(candidatos)
+  const aviso = avisoGolpe(candidatos)
+
   return (
     <div className="main main-ancho">
       <h1>Comparar</h1>
+      {aviso && (
+        <p className="aviso-golpe" role="status">
+          {aviso}
+        </p>
+      )}
       <div className="tabla-scroll">
         <table className="comparar">
           <thead>
@@ -961,6 +983,14 @@ function Comparar(props: any) {
                 </tr>
               )
             })}
+            <tr>
+              <th>Golpe</th>
+              {coches.map((c: any, i: number) => (
+                <td key={c.id} className={ganadores.includes(i) ? 'mejor' : ''}>
+                  {textoGolpe(candidatos[i].resultado)}
+                </td>
+              ))}
+            </tr>
           </tbody>
         </table>
       </div>
