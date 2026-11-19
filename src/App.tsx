@@ -5,6 +5,7 @@ import boltIcon from './assets/bolt.svg'
 import shieldIcon from './assets/shield.svg'
 import { Aviso, Barra, Consejo, DINERO_INICIAL, Estrellas, FondoViceCity, Hud, Noticias, nivelBusqueda, pctVelocidad, useTrucos } from './gta'
 import { CreditoFoto, FotoCoche, SombraCoche } from './fotos'
+import { mejoresParaGolpe, puntuacionGolpe } from './dominio/golpe'
 
 const API = '/api'
 
@@ -177,7 +178,7 @@ function convertir(d: any) {
     sellPrice: Number(d.sellPrice),
     perfScore: Number(d.perfScore),
   }
-  return { ...c, busqueda: nivelBusqueda(c) }
+  return { ...c, busqueda: nivelBusqueda(c), golpe: puntuacionGolpe(c) }
 }
 
 function leerComparar() {
@@ -912,11 +913,19 @@ function Comparar(props: any) {
     ['Precio (GTA$)', 'price', 'min'],
     ['Precio de venta (GTA$)', 'sellPrice', 'max'],
     ['Puntuación de rendimiento', 'perfScore', 'max'],
+    ['Para un golpe', 'golpe', 'max', false, (c: any) => c.golpe],
   ]
+
+  const mejoresGolpe = mejoresParaGolpe<any>(coches)
 
   return (
     <div className="main main-ancho">
       <h1>Comparar</h1>
+      {mejoresGolpe.length > 0 && (
+        <p className="ficha-nota">
+          Mejor para un golpe: <strong>{mejoresGolpe.map((c: any) => c.model).join(' y ')}</strong>
+        </p>
+      )}
       <div className="tabla-scroll">
         <table className="comparar">
           <thead>
@@ -950,6 +959,8 @@ function Comparar(props: any) {
                     <td key={c.id} className={coches.length > 1 && c[f[1]] == mejor ? 'mejor' : ''}>
                       {f[1] == 'busqueda' ? (
                         <Estrellas nivel={c.busqueda} />
+                      ) : f[1] == 'golpe' ? (
+                        c.golpe + ' / 100'
                       ) : c[f[1]] ? (
                         f[3] ? dec(c[f[1]]) : typeof c[f[1]] == 'number' ? num(c[f[1]]) : c[f[1]]
                       ) : (
