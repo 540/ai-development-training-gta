@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  PLAZAS_EQUIPO,
-  PUNTOS_ARMADO,
-  PUNTOS_BLINDAJE,
-  PUNTOS_HUIDA,
-  PUNTOS_PLAZAS,
-  mejoresParaGolpe,
-  puntuacionGolpe,
-  type VehiculoGolpe,
-} from './golpe'
+import { mejoresParaGolpe, puntuacionGolpe, unirConY, type VehiculoGolpe } from './golpe'
 
 // Fichas reales de api/vehicles.json, ya convertidas como hace convertir()
 const ZENTORNO: VehiculoGolpe = { armor: 'None', armado: false, seats: 2, acceleration: 84.2, traction: 80.3 }
@@ -20,15 +11,11 @@ const OPPRESSOR: VehiculoGolpe = { armor: 'None', armado: true, seats: 1, accele
 const DUBSTA_6X6: VehiculoGolpe = { armor: 'None', armado: false, seats: 6, acceleration: 52, traction: 64 }
 const BOXVILLE: VehiculoGolpe = { armor: 'None', armado: false, seats: null, acceleration: 36, traction: 55 }
 
-describe('constantes del supuesto de golpe', () => {
-  it('suman 100 puntos como máximo', () => {
-    expect(PUNTOS_BLINDAJE).toEqual({ None: 0, Light: 15, Heavy: 30 })
-    expect(PUNTOS_BLINDAJE.Heavy + PUNTOS_ARMADO + PUNTOS_PLAZAS + PUNTOS_HUIDA).toBe(100)
-    expect(PLAZAS_EQUIPO).toBe(4)
-  })
-})
-
 describe('puntuacionGolpe', () => {
+  it('un vehículo con todo al máximo da 100', () => {
+    expect(puntuacionGolpe({ armor: 'Heavy', armado: true, seats: 4, acceleration: 100, traction: 100 })).toBe(100)
+  })
+
   it('puntúa vehículos reales', () => {
     expect(puntuacionGolpe(ZENTORNO)).toBe(39)
     expect(puntuacionGolpe(KURUMA_BLINDADO)).toBe(75)
@@ -85,5 +72,23 @@ describe('mejoresParaGolpe', () => {
   it('con menos de dos vehículos no hay mejor', () => {
     expect(mejoresParaGolpe([conGolpe('Zentorno', ZENTORNO)])).toEqual([])
     expect(mejoresParaGolpe([])).toEqual([])
+  })
+})
+
+describe('unirConY', () => {
+  it('sin nombres devuelve una cadena vacía', () => {
+    expect(unirConY([])).toBe('')
+  })
+
+  it('con un nombre lo devuelve tal cual', () => {
+    expect(unirConY(['Oppressor'])).toBe('Oppressor')
+  })
+
+  it('con dos nombres los une con «y»', () => {
+    expect(unirConY(["Duke O'Death", 'Oppressor'])).toBe("Duke O'Death y Oppressor")
+  })
+
+  it('con tres nombres separa con comas y une el último con «y»', () => {
+    expect(unirConY(['Kuruma', "Duke O'Death", 'Oppressor'])).toBe("Kuruma, Duke O'Death y Oppressor")
   })
 })

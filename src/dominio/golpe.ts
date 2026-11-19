@@ -28,3 +28,8 @@ export function mejoresParaGolpe<T extends { golpe: number }>(coches: T[]): T[] 
   const maxima = Math.max(...coches.map((c) => c.golpe))
   return coches.filter((c) => c.golpe === maxima)
 }
+
+export function unirConY(nombres: string[]): string {
+  if (nombres.length < 2) return nombres[0] ?? ''
+  return nombres.slice(0, -1).join(', ') + ' y ' + nombres[nombres.length - 1]
+}

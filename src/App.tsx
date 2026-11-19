@@ -5,7 +5,7 @@ import boltIcon from './assets/bolt.svg'
 import shieldIcon from './assets/shield.svg'
 import { Aviso, Barra, Consejo, DINERO_INICIAL, Estrellas, FondoViceCity, Hud, Noticias, nivelBusqueda, pctVelocidad, useTrucos } from './gta'
 import { CreditoFoto, FotoCoche, SombraCoche } from './fotos'
-import { mejoresParaGolpe, puntuacionGolpe } from './dominio/golpe'
+import { mejoresParaGolpe, puntuacionGolpe, unirConY } from './dominio/golpe'
 
 const API = '/api'
 
@@ -923,7 +923,7 @@ function Comparar(props: any) {
       <h1>Comparar</h1>
       {mejoresGolpe.length > 0 && (
         <p className="ficha-nota">
-          Mejor para un golpe: <strong>{mejoresGolpe.map((c: any) => c.model).join(' y ')}</strong>
+          Mejor para un golpe: <strong>{unirConY(mejoresGolpe.map((c: any) => c.model))}</strong>
         </p>
       )}
       <div className="tabla-scroll">
