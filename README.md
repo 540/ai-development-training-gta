@@ -110,8 +110,11 @@ Se lanza desde Claude Code pidiéndole que ejecute el workflow `implement` con `
 
 ## Práctica
 
-1. **Lánzalo.** Ejecuta el workflow con el prompt y mira el progreso con `/workflows`.
+1. **Lánzalo.** Pega este prompt en Claude Code y mira el progreso con `/workflows`:
+
+   ```text
+   lanza el workflow implement con la tarea: Añade al comparador cuál de los coches es mejor para dar un golpe.
+   ```
+
 2. **Con especificación.** Lánzalo otra vez con la `specs/` que sacaste con `/grill-me`.
 3. **Cotejo.** ¿Qué cambia frente a `/implement` en la rama `skills`? ¿Quién decide cuándo está terminado?
-
-> Añade al comparador cuál de los coches es mejor para dar un golpe.
