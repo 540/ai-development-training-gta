@@ -36,11 +36,20 @@ export interface DatosGolpe {
   agarre: number;
 }
 
-export interface ResultadoGolpe {
-  apto: boolean;
-  puntuacion: number | null;
+export interface ResultadoApto {
+  apto: true;
+  puntuacion: number;
+  plazas: number;
+}
+
+export interface ResultadoNoApto {
+  apto: false;
+  puntuacion: null;
+  /** null si la API no da el dato. */
   plazas: number | null;
 }
+
+export type ResultadoGolpe = ResultadoApto | ResultadoNoApto;
 
 export interface CandidatoGolpe {
   nombre: string;
@@ -48,7 +57,8 @@ export interface CandidatoGolpe {
 }
 
 export function puntuarGolpe(d: DatosGolpe): ResultadoGolpe {
-  if ((d.plazas ?? 0) < PLAZAS_BANDA)
+  const plazas = d.plazas ?? 0;
+  if (plazas < PLAZAS_BANDA)
     return { apto: false, puntuacion: null, plazas: d.plazas };
   const blindaje = PUNTOS_BLINDAJE[d.blindaje] ?? 0;
   const armamento = PUNTOS_ARMAMENTO[d.armamento] ?? 0;
@@ -56,7 +66,7 @@ export function puntuarGolpe(d: DatosGolpe): ResultadoGolpe {
   const puntuacion = Math.round(
     PESO_BLINDAJE * blindaje + PESO_HUIDA * huida + PESO_ARMAMENTO * armamento,
   );
-  return { apto: true, puntuacion, plazas: d.plazas };
+  return { apto: true, puntuacion, plazas };
 }
 
 export function textoGolpe(r: ResultadoGolpe): string {
@@ -65,12 +75,24 @@ export function textoGolpe(r: ResultadoGolpe): string {
   return `No apto: ${r.plazas} de ${PLAZAS_BANDA} plazas`;
 }
 
+interface Ganador {
+  indice: number;
+  puntuacion: number;
+}
+
+/** Aptos con la puntuación máxima; vacío con menos de 2 candidatos o sin aptos. */
+function mejoresAptos(candidatos: CandidatoGolpe[]): Ganador[] {
+  if (candidatos.length < 2) return [];
+  const aptos = candidatos.flatMap((c, indice) =>
+    c.resultado.apto ? [{ indice, puntuacion: c.resultado.puntuacion }] : [],
+  );
+  const maximo = Math.max(...aptos.map((a) => a.puntuacion));
+  return aptos.filter((a) => a.puntuacion === maximo);
+}
+
 /** Índices de los aptos con la puntuación máxima; vacío con menos de 2 candidatos o sin aptos. */
 export function ganadoresGolpe(candidatos: CandidatoGolpe[]): number[] {
-  if (candidatos.length < 2) return [];
-  const puntos = candidatos.map((c) => c.resultado.puntuacion ?? -1);
-  const maximo = Math.max(...puntos);
-  return puntos.flatMap((p, i) => (p === maximo && p >= 0 ? [i] : []));
+  return mejoresAptos(candidatos).map((g) => g.indice);
 }
 
 function enumerar(nombres: string[]): string {
@@ -79,11 +101,11 @@ function enumerar(nombres: string[]): string {
 
 export function avisoGolpe(candidatos: CandidatoGolpe[]): string | null {
   if (candidatos.length < 2) return null;
-  const ganadores = ganadoresGolpe(candidatos);
+  const ganadores = mejoresAptos(candidatos);
   if (ganadores.length === 0)
     return `Ninguno sirve para el golpe: hace falta un vehículo de ${PLAZAS_BANDA} plazas o más`;
-  const nombres = ganadores.map((i) => candidatos[i].nombre);
-  const puntuacion = candidatos[ganadores[0]].resultado.puntuacion;
+  const nombres = ganadores.map((g) => candidatos[g.indice].nombre);
+  const puntuacion = ganadores[0].puntuacion;
   if (nombres.length === 1)
     return `Mejor para el golpe: ${nombres[0]} (${puntuacion})`;
   return `Empate para el golpe: ${enumerar(nombres)} (${puntuacion})`;
